@@ -1,0 +1,109 @@
+---
+title: "wine_quality"
+author: "S/18/837"
+date: "2024-05-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Load packages
+```{r}
+library(ggplot2)
+library(skimr)
+library(tidyverse)
+library(CCA)
+library(CCP)
+```
+#Load dataset
+```{r}
+wine_data <- read.csv("../data/winequality-red.csv",sep = ";")
+```
+```{r}
+view(wine_data)
+```
+#Summarize dataset
+```{r}
+skim(wine_data)
+```
+#Split dataset
+```{r}
+acidityNfermentation <- wine_data[,c(1,2,3,4,9)]
+chemicalCompNstability <- wine_data[,c(5,6,7,8,10)]
+```
+#Standarize dataset
+```{r}
+acidityNfermentation <- scale(acidityNfermentation)
+chemicalCompNstability <- scale(chemicalCompNstability)
+```
+```{r}
+apply(acidityNfermentation, 2, mean)  # Should be approximately 0
+apply(acidityNfermentation, 2, sd)    # Should be 1
+apply(chemicalCompNstability, 2, mean)  # Should be approximately 0
+apply(chemicalCompNstability, 2, sd)    # Should be 1
+```
+#Check correlation
+```{r}
+matcor(acidityNfermentation,chemicalCompNstability)
+```
+#Canonical correlation model
+```{r}
+ccModel <- cc(acidityNfermentation,chemicalCompNstability)
+```
+#correlations
+```{r}
+ccModel$cor
+```
+#Wilk's lamda test
+```{r}
+rho <- ccModel$cor
+n <- dim(acidityNfermentation)[1]
+p <- dim(chemicalCompNstability)[2]
+q <- dim(acidityNfermentation)[2]
+```
+```{r}
+p.asym(rho,n,p,q,tstat = "Wilks")
+```
+```{r}
+p.asym(rho,n,p,q,tstat = "Hotelling")
+```
+```{r}
+p.asym(rho,n,p,q,tstat = "Pillai")
+```
+```{r}
+p.asym(rho,n,p,q,tstat = "Roy")
+```
+#Significant correlations
+```{r}
+ccModel$cor[1:4]
+```
+#squared correlations
+```{r}
+ccModel$cor[1:4]^2
+```
+#estimate canonical correlations 
+```{r}
+ccModel$xcoef
+```
+```{r}
+ccModel$ycoef
+```
+#correlation coefficients 
+```{r}
+loadingsWine <- comput(acidityNfermentation,chemicalCompNstability,ccModel)
+```
+```{r}
+loadingsWine$corr.X.xscores
+```
+```{r}
+loadingsWine$corr.Y.yscores
+```
+```{r}
+loadingsWine$corr.X.yscores
+```
+```{r}
+loadingsWine$corr.Y.xscores
+```
+
